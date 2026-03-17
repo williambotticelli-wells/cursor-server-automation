@@ -1,0 +1,54 @@
+--- a/dallinger/command_line/lib/ec2.py
++++ b/dallinger/command_line/lib/ec2.py
+@@ -157,8 +157,14 @@ def get_instance_details(instance_types, region_name=None):
+     return price_df
+ 
+ 
+ def get_instances(region_name):
+-    reservations = get_ec2_client(region_name).describe_instances()["Reservations"]
++    ec2 = get_ec2_client(region_name)
++    reservations = []
++    response = ec2.describe_instances()
++    reservations.extend(response["Reservations"])
++    while "NextToken" in response:
++        response = ec2.describe_instances(NextToken=response["NextToken"])
++        reservations.extend(response["Reservations"])
++
+     instances = []
+     for reservation in reservations:
+         for instance in reservation["Instances"]:
+@@ -176,8 +182,8 @@ def get_instances(region_name):
+                     "instance_type": instance["InstanceType"],
+                     "region": region_name,
+                     "state": instance["State"]["Name"],
+-                    "public_dns_name": instance["PublicDnsName"],
++                    "public_dns_name": instance.get("PublicDnsName", ""),
+                     # 'public_ip_address': instance['PublicIpAddress'],
+-                    "pem": instance["KeyName"],
++                    "pem": instance.get("KeyName", ""),
+                     # Duration since instance was started
+                     "uptime": (
+                         now_in_instance_time_zone - instance["LaunchTime"]
+@@ -215,9 +215,18 @@ def get_instances(region_name):
+ def get_all_instances(region_name=None):
+     if region_name is None:
+         logger.warning("Listing instances in all regions...")
+         instance_dfs = []
+         all_regions = get_ec2_client().describe_regions()["Regions"]
+-        pb = tqdm(all_regions, total=len(all_regions))
++        # mininterval=1.0 and file=sys.stderr avoid progress-bar spam corrupting output
++        pb = tqdm(
++            all_regions,
++            total=len(all_regions),
++            mininterval=1.0,
++            file=sys.stderr,
++            disable=not sys.stderr.isatty(),
++        )
+         for region in pb:
+             pb.set_description("Retrieving instances in " + region["RegionName"])
+             instance_dfs.append(get_instances(region["RegionName"]))
+@@ -258,6 +273,7 @@ def list_instances(region_name=None, filtered_states=[], pem=None):
+     if pem is not None:
+         instance_df = instance_df.query("pem.str.endswith(@pem)")
++    instance_df = instance_df.reset_index(drop=True)
+     print(instance_df.to_markdown())
