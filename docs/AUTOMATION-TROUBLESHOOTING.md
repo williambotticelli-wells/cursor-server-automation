@@ -147,7 +147,7 @@ For the Friday 9am / Slack-triggered agent that runs the EC2 report:
   3. Apply the `--all` fix: `./scripts/apply-dallinger-ec2-fix.sh` (or manually patch the installed `dallinger/command_line/ec2.py` to add the `--all` option)
   4. Run: `dallinger ec2 list instances --all`
 
-  Then parse output into running / stopped / long-running and post to #server-channel (or use memory for last week’s snapshot and pem↔person routing).
+  Then parse output into running / stopped / long-running, include per-instance estimated `$/hour`, and post to #server-channel (or use memory for last week’s snapshot and pem↔person routing).
 
 ### What often happens on the cloud runner
 
@@ -174,18 +174,21 @@ You manage EC2 instance tracking and notifications.
    - If dallinger is missing or the `--all` flag is not available: `source .venv/bin/activate && pip install dallinger && ./scripts/apply-dallinger-ec2-fix.sh` (you must run the fix script after installing dallinger so `--all` exists).
    - Then run: `source .venv/bin/activate && dallinger ec2 list instances --all`. If it fails with "No such option: --all", run `./scripts/apply-dallinger-ec2-fix.sh` and try again. If it fails with an AWS auth error, AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY must be set in the automation environment.
 2. Parse output and categorize servers:
-   - Running servers: extract "name" and "pem" fields
-   - Stopped servers: extract "name" and "pem" fields
+   - Running servers: extract "name" and "pem" fields, plus instance type and estimated `$/hour` (on-demand estimate is fine)
+   - Stopped servers: extract "name" and "pem" fields, plus instance type and estimated `$/hour`
    - Long-running servers: identify any running >1 week consecutively (compare against last week's output stored in memory)
 3. Send to Slack with formatted results:
    **Running Servers:**
-   [list names and pem]
+   [list name, pem, type, $/hour]
+
+   **Running Total:**
+   [sum of running instances $/hour]
 
    **Stopped Servers:**
-   [list names and pem]
+   [list name, pem, type, $/hour]
 
    **Long-running (>1 week):**
-   [list names and pem]
+   [list name, pem, type, $/hour]
 
 **On Slack message trigger (when user replies with a person's name):**
 1. Extract the person's name from the message
