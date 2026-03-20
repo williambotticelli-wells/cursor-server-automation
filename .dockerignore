@@ -1,0 +1,13 @@
+# We don't want to copy virtual environments into the Docker image
+.venv
+.env
+
+# Development artifacts (reduce build context size)
+__pycache__
+.ipynb_checkpoints
+.git
+*.pyc
+.pytest_cache
+
+# Exclude unused reconstructed-demucs stimuli (was ~670MB); MIREX stimuli in static/mirex are used
+static/reconstructed-demucs

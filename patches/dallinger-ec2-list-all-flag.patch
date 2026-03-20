@@ -1,0 +1,23 @@
+--- a/dallinger/command_line/ec2.py
++++ b/dallinger/command_line/ec2.py
+@@ -84,13 +84,15 @@ def list(ctx):
+ @click.option("--region", default=None, help="Region name")
+ @click.option("--running", is_flag=True, help="List running instances")
+ @click.option("--stopped", is_flag=True, help="List stopped instances")
+ @click.option("--terminated", is_flag=True, help="List terminated instances")
++@click.option("--all", "all_instances", is_flag=True, help="List all instances (ignore PEM/key filter)")
+ @click.pass_context
+-def list__instances(ctx, region, running, stopped, terminated):
++def list__instances(ctx, region, running, stopped, terminated, all_instances):
+     """List your EC2 instances (with filtering)"""
+     filtered_states = []
+     if running:
+         filtered_states.append("running")
+     if stopped:
+         filtered_states.append("stopped")
+     if terminated:
+         filtered_states.append("terminated")
+     cfg = get_instance_config()
+-    pem = cfg.get("pem")
++    pem = None if all_instances else cfg.get("pem")
+     list_instances(region, filtered_states=filtered_states, pem=pem)

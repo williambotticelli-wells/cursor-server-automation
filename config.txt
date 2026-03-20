@@ -1,0 +1,7 @@
+[Parameters]
+server_pem = /Users/ww577/cap.pem
+
+[Prolific]
+# Set these (or in ~/.dallingerconfig). Get IDs from prolific.com → Workspaces / Projects.
+prolific_workspace = Workspace COCOCO
+prolific_project = William Experiments

@@ -1,0 +1,14 @@
+{
+  "device_compatibility": ["desktop"],
+  "filters": [
+    {
+      "filter_id": "current-country-of-residence",
+      "selected_values": ["626"]
+    },
+    {
+      "filter_id": "first-language",
+      "selected_values": ["18"]
+    }
+  ],
+  "peripheral_requirements": []
+}
